@@ -6,7 +6,7 @@ from PIL import Image, ImageColor
 
 
 def rgb_to_hex(r: np.uint8, g: np.uint8, b: np.uint8) -> str:
-    return f'{r:02x}{g:02x}{b:b02x}'
+    return f'{r:02x}{g:02x}{b:02x}'
 
 
 def decode():
