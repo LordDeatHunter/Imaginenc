@@ -6,7 +6,7 @@ from PIL import Image, ImageColor
 
 
 def rgb_to_hex(r: np.uint8, g: np.uint8, b: np.uint8) -> str:
-    return '{:02x}{:02x}{:02x}'.format(r, g, b)
+    return f'{r:02x}{g:02x}{b:b02x}'
 
 
 def decode():
@@ -61,12 +61,12 @@ def write_colors_to_image(colors: List[str]):
             image_data.append(image_row)
             image_row = []
 
-    output_file = input(
+    output_file_name = input(
         'Enter the name (without extension) of the image file you wish to '
         'save: '
     )
     img = Image.fromarray((np.array(image_data)).astype(np.uint8))
-    img.save(output_file + '.png')
+    img.save(f'{output_file_name}.png')
 
 
 def encode():
