@@ -20,45 +20,30 @@ def decode():
         except OSError:
             print('Invalid file. Try again.')
     data = np.asarray(img)
-    file_data = ''
+    file_data = []
     for row in data:
         for pixel in row:
-            file_data += rgb_to_hex(pixel[0], pixel[1], pixel[2])
+            file_data.append(rgb_to_hex(pixel[0], pixel[1], pixel[2]))
 
     output_file = input(
         'Enter the filename (with extension) of the file you wish to save: '
     )
-    with open(output_file, "wb") as f:
-        f.write(bytes.fromhex(file_data))
+    with open(output_file, 'wb') as f:
+        f.write(bytes.fromhex(''.join(file_data)))
 
 
-def encode():
-    colors = []
-    while True:
-        input_file = input(
-            'Enter the filename (with extension) of the file you wish to '
-            'open: '
-        )
-        try:
-            with open(input_file, 'rb') as f:
-                color = ''
-                while True:
-                    data = f.read(1)
-                    if not data:
-                        break
-                    if len(color) == 6:
-                        colors.append('#' + color)
-                        color = data.hex()
-                    else:
-                        color += data.hex()
-            if color != '':
-                while len(color) < 6:
-                    color += '0'
-                colors.append('#' + color)
-            break
-        except OSError:
-            print('Invalid file. Try again.')
+def get_file_bytes(input_file_name):
+    file_bytes = []
+    try:
+        with open(input_file_name, 'rb') as f:
+            while byte := f.read(1):
+                file_bytes.append(byte)
+        return file_bytes
+    except OSError:
+        return None
 
+
+def write_colors_to_image(colors):
     size = len(colors)
     root = math.ceil(math.sqrt(size))
     x, y = 1, size
@@ -83,7 +68,32 @@ def encode():
     img.save(output_file + '.png')
 
 
-if __name__ == '__main__':
+def encode():
+    colors = []
+    while True:
+        input_file_name = input(
+            'Enter the filename (with extension) of the file you wish to '
+            'open: '
+        )
+        file_bytes = get_file_bytes(input_file_name)
+        if file_bytes is not None:
+            break
+        print('Invalid file. Try again.')
+
+    color = '#'
+    for byte in file_bytes:
+        color += byte.hex()
+        if len(color) == 7:
+            colors.append(color)
+            color = '#'
+    if color != '#':
+        while len(color) < 7:
+            color += '0'
+        colors.append(color)
+    write_colors_to_image(colors)
+
+
+def main():
     while True:
         mode = input('(E)ncode or (D)ecode? ').lower()
         if mode in ['e', 'encode', '1']:
@@ -92,3 +102,7 @@ if __name__ == '__main__':
         elif mode in ['d', 'decode', '2']:
             decode()
             break
+
+
+if __name__ == '__main__':
+    main()
