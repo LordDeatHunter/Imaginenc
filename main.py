@@ -47,10 +47,10 @@ def get_file_bytes(input_file_name: str) -> Optional[List[bytes]]:
 def write_colors_to_image(colors: List[str]):
     size = len(colors)
     root = math.ceil(math.sqrt(size))
-    x, y = 1, size
+    x = 1
     for i in range(root + 1, 1, -1):
         if size % i == 0:
-            x, y = i, size / i
+            x = i
             break
 
     image_data = []
