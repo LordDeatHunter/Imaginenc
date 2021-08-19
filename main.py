@@ -1,10 +1,11 @@
 import math
+from typing import List, Optional
 
 import numpy as np
 from PIL import Image, ImageColor
 
 
-def rgb_to_hex(r, g, b):
+def rgb_to_hex(r: np.uint8, g: np.uint8, b: np.uint8) -> str:
     return '{:02x}{:02x}{:02x}'.format(r, g, b)
 
 
@@ -32,7 +33,7 @@ def decode():
         f.write(bytes.fromhex(''.join(file_data)))
 
 
-def get_file_bytes(input_file_name):
+def get_file_bytes(input_file_name: str) -> Optional[List[bytes]]:
     file_bytes = []
     try:
         with open(input_file_name, 'rb') as f:
@@ -43,7 +44,7 @@ def get_file_bytes(input_file_name):
         return None
 
 
-def write_colors_to_image(colors):
+def write_colors_to_image(colors: List[str]):
     size = len(colors)
     root = math.ceil(math.sqrt(size))
     x, y = 1, size
