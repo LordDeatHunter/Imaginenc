@@ -9,9 +9,24 @@ Windows doesn't have anything by default, so users would need to download a Term
 
 ## Installation and usage
 
-Install [Python 3+](https://www.python.org/) and add it to the system path.  
+Install [Python 3.8+](https://www.python.org/) and add it to the system path.  
 Run `pip install -r requirements.txt` inside the folder and wait for the installation to finish.  
-Run `python main.py`
+Run `python imaginenc.py`
+
+```
+usage: imaginenc.py [-h] (-e | -d) -i INPUT -o OUTPUT
+
+Converts any file into an image, and images back to files. Run without args for interactive input mode.
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -e, --encode          encode file to image
+  -d, --decode          decode image to file
+  -i INPUT, --input INPUT
+                        input file
+  -o OUTPUT, --output OUTPUT
+                        output file
+```
 
 ## Planned Features
 
