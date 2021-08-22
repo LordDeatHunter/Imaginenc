@@ -5,7 +5,7 @@ Currently, there is no built-in way of knowing the file type of the converted im
 Linux users can use the `file` command.  
 Windows doesn't have anything by default, so users would need to download a Terminal Emulator.  
 
-![Source Code Image](images/imaginenc.png "Source Code Image")
+![Source Code Image](images/imaginenc.py.png "Source Code Image")
 
 ## Installation and usage
 
