@@ -51,14 +51,6 @@ def decode_image_name(input_file_name: str, output_file_name: str):
         f.write(file_bytes)
 
 
-def get_file_bytes(input_file_name: str) -> Optional[bytes]:
-    try:
-        with open(input_file_name, 'rb') as f:
-            return f.read()
-    except OSError:
-        return None
-
-
 def int_to_bytes(num: int, num_bytes: int, signed: bool = False) -> bytes:
     return num.to_bytes(num_bytes, byteorder='big', signed=signed)
 
@@ -122,6 +114,14 @@ def encode_bytes_to_colors(input_file_bytes: bytes) -> List[str]:
             color += '0'
         colors.append(color)
     return colors
+
+
+def get_file_bytes(input_file_name: str) -> Optional[bytes]:
+    try:
+        with open(input_file_name, 'rb') as f:
+            return f.read()
+    except OSError:
+        return None
 
 
 def encode_file_name(input_file_name: str, output_file_name: str):
