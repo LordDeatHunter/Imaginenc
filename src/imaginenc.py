@@ -8,33 +8,36 @@ from typing import List, Optional, Dict, Iterable, Union, Any
 import numpy as np
 from PIL import Image, ImageColor
 
-META_SIZE = 6
-META_INFO = {
-    'meta_size': (0, 3, int),
-    'extra_zeros': (3, 4, int)
+METADATA_INFO = {
+    'metadata_size': (0, 3, int),
+    'extra_bytes': (3, 4, int),
+    'sign': (4, 54, str)
 }
 
 
-def parse_meta(data: bytes) -> Dict[str, Any]:
+def parse_metadata(data: bytes) -> Dict[str, Any]:
     bytes_converters = {
         int: bytes_to_int,
         str: bytes_to_str
     }
-    meta = {}
-    for key, (fr, to, type_) in META_INFO.items():
-        meta[key] = bytes_converters[type_](data[fr: to])
-    return meta
+    metadata = {}
+    for key, (fr, to, type_) in METADATA_INFO.items():
+        metadata[key] = bytes_converters[type_](data[fr: to])
+    return metadata
 
 
 def decode_image_to_bytes(
         image: Union[Iterable[np.uint8], Image.Image]) -> bytes:
     data = bytes(list(np.asarray(image, dtype=np.uint8).flatten()))
-    meta = parse_meta(data)
+    metadata = parse_metadata(data)
+    sign = metadata['sign'].replace('\0', '')
+    if sign:
+        print(f"This image has been signed: {sign}")
     file_data_hex = ''.join(
-        f'{pixel:02x}' for pixel in data[meta['meta_size']:]
+        f'{pixel:0>2x}' for pixel in data[metadata['metadata_size']:]
     )
     return bytes.fromhex(
-        file_data_hex[:len(file_data_hex) - meta['extra_zeros'] * 2]
+        file_data_hex[:len(file_data_hex) - metadata['extra_bytes'] * 2]
     )
 
 
@@ -75,6 +78,10 @@ def int_to_n_hex(num: int, num_hex: int) -> List[str]:
     return bytes_to_hex(int_to_bytes(num, num_hex))
 
 
+def str_to_hex(string: str) -> List[str]:
+    return bytes_to_hex(str_to_bytes(string))
+
+
 def colors_to_image(colors: List[str]) -> Image.Image:
     size = len(colors)
     root = math.ceil(math.sqrt(size))
@@ -94,17 +101,10 @@ def colors_to_image(colors: List[str]) -> Image.Image:
     return image
 
 
-def encode_bytes_to_colors(input_file_bytes: bytes) -> List[str]:
-    input_file_hex = bytes_to_hex(input_file_bytes)
-    extra_zeros = -len(input_file_hex) % 3
-    meta_hex = [
-        *int_to_n_hex(META_SIZE, 3),
-        *int_to_n_hex(extra_zeros, 1)
-    ]
-    meta_hex += int_to_n_hex(0, META_SIZE - len(meta_hex))
+def hex_bytes_to_colors(hex_bytes: List[str]) -> List[str]:
     colors = []
     color = '#'
-    for byte_hex in meta_hex + input_file_hex:
+    for byte_hex in hex_bytes:
         color += byte_hex
         if len(color) == 7:
             colors.append(color)
@@ -116,6 +116,19 @@ def encode_bytes_to_colors(input_file_bytes: bytes) -> List[str]:
     return colors
 
 
+def encode_bytes_to_colors(
+        input_file_bytes: bytes, sign: str = '') -> List[str]:
+    input_file_hex = bytes_to_hex(input_file_bytes)
+    extra_bytes = -len(input_file_hex) % 3
+    metadata_hex = [
+        *int_to_n_hex(extra_bytes, 1),
+        *str_to_hex(f'{sign:\0<50}')
+    ]
+    metadata_hex += int_to_n_hex(0, -len(metadata_hex) % 3)
+    metadata_hex = int_to_n_hex(len(metadata_hex) + 3, 3) + metadata_hex
+    return hex_bytes_to_colors(metadata_hex + input_file_hex)
+
+
 def get_file_bytes(input_file_name: str) -> Optional[bytes]:
     try:
         with open(input_file_name, 'rb') as f:
@@ -124,12 +137,13 @@ def get_file_bytes(input_file_name: str) -> Optional[bytes]:
         return None
 
 
-def encode_file_name(input_file_name: str, output_file_name: str):
+def encode_file_name(
+        input_file_name: str, output_file_name: str, sign: str = ''):
     input_file_bytes = get_file_bytes(input_file_name)
     if input_file_bytes is None:
         print('Invalid file.')
         return
-    colors = encode_bytes_to_colors(input_file_bytes)
+    colors = encode_bytes_to_colors(input_file_bytes, sign)
     image = colors_to_image(colors)
     if not output_file_name.endswith('.png'):
         output_file_name += '.png'
@@ -165,6 +179,14 @@ def parse_args() -> argparse.Namespace:
         help='output file',
         required=True
     )
+    parser.add_argument(
+        '-s', '--sign',
+        type=lambda s: (
+            s if isinstance(s, str) and s.isascii() and len(s) <= 50 else False
+        ),
+        help='sign the encoded image (max 50 characters)',
+        default=''
+    )
     return parser.parse_args()
 
 
@@ -182,27 +204,35 @@ def process_args_interactive() -> Dict[str, str]:
     if mode == 'e':
         input_file_name = input(
             'Enter the filename (with extension) of the file you wish to '
-            'encode: '
+            'encode:'
         )
     else:
         input_file_name = input(
             'Enter the filename (without extension) of the image you wish to '
-            'decode: '
+            'decode:'
         )
 
     if mode == 'e':
         output_file_name = input(
-            'Enter the filename (without extension) of the image output file: '
+            'Enter the filename (without extension) of the image output file:'
         )
     else:
         output_file_name = input(
-            'Enter the filename (with extension) of the decoded output file: '
+            'Enter the filename (with extension) of the decoded output file:'
         )
+
+    if mode == 'e':
+        sign = input(
+            'Sign the encoded image (max 50 characters, ENTER for blank):'
+        )
+    else:
+        sign = ''
 
     return {
         'mode': mode,
         'input': input_file_name,
-        'output': output_file_name
+        'output': output_file_name,
+        'sign': sign
     }
 
 
@@ -213,14 +243,15 @@ def process_args() -> Dict[str, str]:
     return {
         'mode': 'd' if args.decode else 'e',
         'input': args.input,
-        'output': args.output
+        'output': args.output,
+        'sign': args.sign
     }
 
 
 def main():
     args = process_args()
     if args['mode'] == 'e':
-        encode_file_name(args['input'], args['output'])
+        encode_file_name(args['input'], args['output'], args['sign'])
     elif args['mode'] == 'd':
         decode_image_name(args['input'], args['output'])
 
