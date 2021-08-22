@@ -204,26 +204,26 @@ def process_args_interactive() -> Dict[str, str]:
     if mode == 'e':
         input_file_name = input(
             'Enter the filename (with extension) of the file you wish to '
-            'encode:'
+            'encode: '
         )
     else:
         input_file_name = input(
             'Enter the filename (without extension) of the image you wish to '
-            'decode:'
+            'decode: '
         )
 
     if mode == 'e':
         output_file_name = input(
-            'Enter the filename (without extension) of the image output file:'
+            'Enter the filename (without extension) of the image output file: '
         )
     else:
         output_file_name = input(
-            'Enter the filename (with extension) of the decoded output file:'
+            'Enter the filename (with extension) of the decoded output file: '
         )
 
     if mode == 'e':
         sign = input(
-            'Sign the encoded image (max 50 characters, ENTER for blank):'
+            'Sign the encoded image (max 50 characters, ENTER for blank): '
         )
     else:
         sign = ''
