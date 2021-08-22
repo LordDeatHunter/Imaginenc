@@ -3,7 +3,7 @@
 import math
 import sys
 import argparse
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Iterable
 
 import numpy as np
 from PIL import Image, ImageColor
@@ -13,23 +13,26 @@ def rgb_to_hex(r: np.uint8, g: np.uint8, b: np.uint8) -> str:
     return f'{r:02x}{g:02x}{b:02x}'
 
 
-def decode(input_file_name: str, output_file_name: str):
-    try:
-        if not input_file_name.endswith('.png'):
-            input_file_name += '.png'
-        img = Image.open(input_file_name)
-    except OSError:
-        print('Invalid file.')
-        return
-
-    data = np.asarray(img)
+def decode_image_to_bytes(image: Iterable[np.uint8]) -> bytes:
+    data = np.asarray(image, dtype=np.uint8)
     file_data = []
     for row in data:
         for pixel in row:
             file_data.append(rgb_to_hex(pixel[0], pixel[1], pixel[2]))
+    return bytes.fromhex(''.join(file_data))
 
+
+def decode_image_name(input_file_name: str, output_file_name: str):
+    try:
+        if not input_file_name.endswith('.png'):
+            input_file_name += '.png'
+        image = Image.open(input_file_name)
+    except OSError:
+        print('Invalid file.')
+        return
+    file_bytes = decode_image_to_bytes(image)
     with open(output_file_name, 'wb') as f:
-        f.write(bytes.fromhex(''.join(file_data)))
+        f.write(file_bytes)
 
 
 def get_file_bytes(input_file_name: str) -> Optional[List[bytes]]:
@@ -58,20 +61,16 @@ def write_colors_to_image(colors: List[str], output_file_name: str):
         if len(image_row) == x:
             image_data.append(image_row)
             image_row = []
-    img = Image.fromarray((np.array(image_data)).astype(np.uint8))
+    image = Image.fromarray((np.array(image_data)).astype(np.uint8))
     if not output_file_name.endswith('.png'):
         output_file_name += '.png'
-    img.save(output_file_name)
+    image.save(output_file_name)
 
 
-def encode(input_file_name: str, output_file_name: str):
+def encode_bytes_to_colors(input_file_bytes: List[bytes]) -> List[str]:
     colors = []
-    file_bytes = get_file_bytes(input_file_name)
-    if file_bytes is None:
-        print('Invalid file.')
-        return
     color = '#'
-    for byte in file_bytes:
+    for byte in input_file_bytes:
         color += byte.hex()
         if len(color) == 7:
             colors.append(color)
@@ -80,6 +79,15 @@ def encode(input_file_name: str, output_file_name: str):
         while len(color) < 7:
             color += '0'
         colors.append(color)
+    return colors
+
+
+def encode_file_name(input_file_name: str, output_file_name: str):
+    input_file_bytes = get_file_bytes(input_file_name)
+    if input_file_bytes is None:
+        print('Invalid file.')
+        return
+    colors = encode_bytes_to_colors(input_file_bytes)
     write_colors_to_image(colors, output_file_name)
 
 
@@ -167,9 +175,9 @@ def process_args() -> Dict[str, str]:
 def main():
     args = process_args()
     if args['mode'] == 'e':
-        encode(args['input'], args['output'])
+        encode_file_name(args['input'], args['output'])
     elif args['mode'] == 'd':
-        decode(args['input'], args['output'])
+        decode_image_name(args['input'], args['output'])
 
 
 if __name__ == '__main__':
