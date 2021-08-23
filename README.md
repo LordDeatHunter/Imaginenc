@@ -31,8 +31,62 @@ optional arguments:
   -s SIGN, --sign SIGN  sign the encoded image (max 50 characters)
 ```
 
+## Examples of imaginenc command
+
+Encode
+```bash
+python imaginenc\imaginenc.py -e -i imaginenc\imaginenc.py -o images -s "Thank you for using this tool!"
+```
+
+Decode
+```bash
+python imaginenc\imaginenc.py -d -i images\imaginenc.py.png -o output
+```
+
+## Examples of imaginenc module
+
+Import
+```python
+import imaginenc
+```
+
+Encode file name and save as image
+```python
+imaginenc.encode_file_name(
+    input_file_path='imaginenc/imaginenc.py',
+    output_file_path='images',
+    sign='signature'
+)
+```
+
+Encode file bytes and return image
+```python
+with open('imaginenc/imaginenc.py') as f:
+    image = imaginenc.encode_bytes_to_image(
+        input_file_bytes=f.read(),
+        file_name=f.name(),
+        sign='signature'
+    )
+```
+
+Decode image name and save as original file
+```python
+metadata = imaginenc.decode_image_name(
+    input_file_path='images/imaginenc.py.png',
+    output_file_path='output'
+)
+```
+
+Decode PIL image to original file bytes
+```python
+from PIL import Image
+
+image = Image.open('images/imaginenc.py.png')
+file_bytes, metadata = imaginenc.decode_image_to_bytes(
+    image=image
+)
+```
+
 ## Planned Features
 
-- More intuitive usage.
-- File type detection (for decoding images).
-- Better encryption.
+- Encryption.
