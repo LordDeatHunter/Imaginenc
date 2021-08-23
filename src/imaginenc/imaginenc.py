@@ -33,9 +33,8 @@ def parse_metadata(data: bytes) -> Metadata:
     return metadata
 
 
-def decode_image_to_bytes(
-        image: Union[Iterable[np.uint8], Image.Image]
-) -> (bytes, Metadata):
+def decode_image_to_bytes(image: Union[Iterable[np.uint8], Image.Image]
+                          ) -> (bytes, Metadata):
     data = bytes(list(np.asarray(image, dtype=np.uint8).flatten()))
     metadata = parse_metadata(data)
     sign = metadata['sign']
@@ -125,8 +124,8 @@ def hex_bytes_to_colors(hex_bytes: List[str]) -> List[str]:
     return colors
 
 
-def encode_bytes_to_colors(
-        input_file_bytes: bytes, file_name: str, sign: str = '') -> List[str]:
+def encode_bytes_to_colors(input_file_bytes: bytes, file_name: str,
+                           sign: str = '') -> List[str]:
     input_file_hex = bytes_to_hex(input_file_bytes)
     extra_bytes = -len(input_file_hex) % 3
     metadata_hex = [
@@ -139,6 +138,12 @@ def encode_bytes_to_colors(
     return hex_bytes_to_colors(metadata_hex + input_file_hex)
 
 
+def encode_bytes_to_image(input_file_bytes: bytes, file_name: str,
+                          sign: str = '') -> Image.Image:
+    colors = encode_bytes_to_colors(input_file_bytes, file_name, sign)
+    return colors_to_image(colors)
+
+
 def get_file_bytes(input_file_path: str) -> Optional[bytes]:
     try:
         with open(input_file_path, 'rb') as f:
@@ -147,8 +152,8 @@ def get_file_bytes(input_file_path: str) -> Optional[bytes]:
         return None
 
 
-def encode_file_name(
-        input_file_path: str, output_file_path: str, sign: str = ''):
+def encode_file_name(input_file_path: str, output_file_path: str,
+                     sign: str = ''):
     input_file_bytes = get_file_bytes(input_file_path)
     if input_file_bytes is None:
         print('Invalid file.')
