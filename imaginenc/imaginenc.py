@@ -4,7 +4,8 @@ import os
 import math
 import sys
 import argparse
-from typing import List, Optional, Iterable, Union
+from pathlib import Path
+from typing import List, Tuple, Optional, Iterable, Union
 
 import numpy as np
 from PIL import Image, ImageColor
@@ -38,7 +39,7 @@ def parse_metadata(data: bytes) -> dict:
 
 
 def decode_image_to_bytes(image: Union[Image.Image, Iterable[np.uint8]]
-                          ) -> (bytes, dict):
+                          ) -> Tuple[bytes, dict]:
     """Decode an encoded image into bytes
 
     :param image: PIL image or iterable of unsigned 8bit ints
@@ -72,6 +73,7 @@ def decode_image_name(input_file_path: str, output_file_path: str):
         print('Invalid file.')
         return
     file_bytes, metadata = decode_image_to_bytes(image)
+    Path(output_file_path).mkdir(parents=True, exist_ok=True)
     with open(f'{output_file_path}/{metadata["file_name"]}', 'wb') as f:
         f.write(file_bytes)
 
@@ -205,6 +207,7 @@ def encode_file_name(input_file_path: str, output_file_path: str,
     file_name = os.path.basename(input_file_path)
     colors = encode_bytes_to_colors(input_file_bytes, file_name, sign)
     image = colors_to_image(colors)
+    Path(output_file_path).mkdir(parents=True, exist_ok=True)
     image.save(f'{output_file_path}/{file_name}.png')
 
 
