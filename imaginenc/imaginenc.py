@@ -47,9 +47,6 @@ def decode_image_to_bytes(image: Union[Image.Image, Iterable[np.uint8]]
     """
     data = bytes(list(np.asarray(image, dtype=np.uint8).flatten()))
     metadata = parse_metadata(data)
-    sign = metadata['sign']
-    if sign:
-        print(f'This image has been signed: {sign}')
     file_data_hex = ''.join(
         f'{pixel:0>2x}' for pixel in data[metadata['metadata_size']:]
     )
@@ -59,23 +56,21 @@ def decode_image_to_bytes(image: Union[Image.Image, Iterable[np.uint8]]
     return file_bytes, metadata
 
 
-def decode_image_name(input_file_path: str, output_file_path: str):
+def decode_image_name(input_file_path: str, output_file_path: str) -> dict:
     """Decode an encoded image into a file
 
     :param input_file_path: filepath to image
     :param output_file_path: path to output directory
+    :return: encoded image metadata
     """
-    try:
-        if not input_file_path.endswith('.png'):
-            input_file_path += '.png'
-        image = Image.open(input_file_path)
-    except OSError:
-        print('Invalid file.')
-        return
+    if not input_file_path.endswith('.png'):
+        input_file_path += '.png'
+    image = Image.open(input_file_path)
     file_bytes, metadata = decode_image_to_bytes(image)
     Path(output_file_path).mkdir(parents=True, exist_ok=True)
     with open(f'{output_file_path}/{metadata["file_name"]}', 'wb') as f:
         f.write(file_bytes)
+    return metadata
 
 
 def int_to_bytes(num: int, num_bytes: int, signed: bool = False) -> bytes:
@@ -185,11 +180,8 @@ def encode_bytes_to_image(file_bytes: bytes, file_name: str,
 
 
 def get_file_bytes(input_file_path: str) -> Optional[bytes]:
-    try:
-        with open(input_file_path, 'rb') as f:
-            return f.read()
-    except OSError:
-        return None
+    with open(input_file_path, 'rb') as f:
+        return f.read()
 
 
 def encode_file_name(input_file_path: str, output_file_path: str,
@@ -201,9 +193,6 @@ def encode_file_name(input_file_path: str, output_file_path: str,
     :param sign: signature for the output image
     """
     input_file_bytes = get_file_bytes(input_file_path)
-    if input_file_bytes is None:
-        print('Invalid file.')
-        return
     file_name = os.path.basename(input_file_path)
     colors = encode_bytes_to_colors(input_file_bytes, file_name, sign)
     image = colors_to_image(colors)
@@ -312,10 +301,16 @@ def parse_args() -> dict:
 
 def main():
     args = parse_args()
-    if args['mode'] == 'e':
-        encode_file_name(args['input'], args['output'], args['sign'])
-    elif args['mode'] == 'd':
-        decode_image_name(args['input'], args['output'])
+    try:
+        if args['mode'] == 'e':
+            encode_file_name(args['input'], args['output'], args['sign'])
+        elif args['mode'] == 'd':
+            metadata = decode_image_name(args['input'], args['output'])
+            sign = metadata['sign']
+            if sign:
+                print(f'This image has been signed: {sign}')
+    except OSError as err:
+        print(err.strerror, file=sys.stderr)
 
 
 if __name__ == '__main__':
