@@ -7,16 +7,18 @@ Windows doesn't have anything by default, so users would need to download a Term
 
 ![Source Code Image](images/imaginenc.py.png "Source Code Image")
 
-## Installation and usage
+## Installation
 
 Install [Python 3.8+](https://www.python.org/) and add it to the system path.  
 Run `pip install -r requirements.txt` inside the folder and wait for the installation to finish.  
 Run `python imaginenc.py`
 
-```
-usage: imaginenc.py [-h] (-e | -d) -i INPUT -o OUTPUT
+## Usage
 
-Converts any file into an image, and images back to files. Run without args for interactive input mode.
+```
+usage: imaginenc.py [-h] (-e | -d) -i INPUT [-o OUTPUT] [-s SIGN]
+
+Convert any file into an image, and images back to files. Run without args for interactive input mode.
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -25,7 +27,8 @@ optional arguments:
   -i INPUT, --input INPUT
                         input file
   -o OUTPUT, --output OUTPUT
-                        output file
+                        output folder
+  -s SIGN, --sign SIGN  sign the encoded image (max 50 characters)
 ```
 
 ## Planned Features
