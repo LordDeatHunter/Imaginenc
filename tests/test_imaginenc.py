@@ -1,6 +1,6 @@
 import string
 
-from src import imaginenc
+import imaginenc
 
 test_bytes = string.printable.encode()
 
