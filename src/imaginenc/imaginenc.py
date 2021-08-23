@@ -1,10 +1,10 @@
-#!/usr/bin/env python3
+"""Convert any file into an image"""
 
 import os
 import math
 import sys
 import argparse
-from typing import List, Optional, Dict, Iterable, Union
+from typing import List, Optional, Iterable, Union
 
 import numpy as np
 from PIL import Image, ImageColor
@@ -15,10 +15,14 @@ METADATA_INFO = {
     'sign': (4, 54, str),
     'file_name': (54, 310, str)
 }
-Metadata = Dict[str, any]
 
 
-def parse_metadata(data: bytes) -> Metadata:
+def parse_metadata(data: bytes) -> dict:
+    """Parse metadata bytes
+
+    :param data: metadata bytes
+    :return: parsed metadata dictionary
+    """
     bytes_converters = {
         int: bytes_to_int,
         str: bytes_to_str
@@ -33,8 +37,13 @@ def parse_metadata(data: bytes) -> Metadata:
     return metadata
 
 
-def decode_image_to_bytes(image: Union[Iterable[np.uint8], Image.Image]
-                          ) -> (bytes, Metadata):
+def decode_image_to_bytes(image: Union[Image.Image, Iterable[np.uint8]]
+                          ) -> (bytes, dict):
+    """Decode an encoded image into bytes
+
+    :param image: PIL image or iterable of unsigned 8bit ints
+    :return: decoded bytes and metadata
+    """
     data = bytes(list(np.asarray(image, dtype=np.uint8).flatten()))
     metadata = parse_metadata(data)
     sign = metadata['sign']
@@ -50,6 +59,11 @@ def decode_image_to_bytes(image: Union[Iterable[np.uint8], Image.Image]
 
 
 def decode_image_name(input_file_path: str, output_file_path: str):
+    """Decode an encoded image into a file
+
+    :param input_file_path: filepath to image
+    :param output_file_path: path to output directory
+    """
     try:
         if not input_file_path.endswith('.png'):
             input_file_path += '.png'
@@ -91,6 +105,11 @@ def str_to_hex(string: str, num_hex: int = 0) -> List[str]:
 
 
 def colors_to_image(colors: List[str]) -> Image.Image:
+    """Create an image with minimum side difference
+
+    :param colors: list of hex pixel colors
+    :return: PIL image
+    """
     size = len(colors)
     root = math.ceil(math.sqrt(size))
     x = 1
@@ -110,6 +129,11 @@ def colors_to_image(colors: List[str]) -> Image.Image:
 
 
 def hex_bytes_to_colors(hex_bytes: List[str]) -> List[str]:
+    """Convert hex bytes into list of hex pixel colors
+
+    :param hex_bytes: list of hex bytes
+    :return: list of hex pixel colors
+    """
     colors = []
     color = '#'
     for byte_hex in hex_bytes:
@@ -124,9 +148,16 @@ def hex_bytes_to_colors(hex_bytes: List[str]) -> List[str]:
     return colors
 
 
-def encode_bytes_to_colors(input_file_bytes: bytes, file_name: str,
+def encode_bytes_to_colors(file_bytes: bytes, file_name: str,
                            sign: str = '') -> List[str]:
-    input_file_hex = bytes_to_hex(input_file_bytes)
+    """Encode bytes into image pixel colors
+
+    :param file_bytes: input file bytes
+    :param file_name: input file name
+    :param sign: signature for the output image
+    :return: list of hex pixel colors
+    """
+    input_file_hex = bytes_to_hex(file_bytes)
     extra_bytes = -len(input_file_hex) % 3
     metadata_hex = [
         *int_to_n_hex(extra_bytes, 1),
@@ -138,9 +169,16 @@ def encode_bytes_to_colors(input_file_bytes: bytes, file_name: str,
     return hex_bytes_to_colors(metadata_hex + input_file_hex)
 
 
-def encode_bytes_to_image(input_file_bytes: bytes, file_name: str,
+def encode_bytes_to_image(file_bytes: bytes, file_name: str,
                           sign: str = '') -> Image.Image:
-    colors = encode_bytes_to_colors(input_file_bytes, file_name, sign)
+    """Encode bytes into an image
+
+    :param file_bytes: input file bytes
+    :param file_name: input file name
+    :param sign: signature for the output image
+    :return: PIL image
+    """
+    colors = encode_bytes_to_colors(file_bytes, file_name, sign)
     return colors_to_image(colors)
 
 
@@ -154,6 +192,12 @@ def get_file_bytes(input_file_path: str) -> Optional[bytes]:
 
 def encode_file_name(input_file_path: str, output_file_path: str,
                      sign: str = ''):
+    """Encode a file into an image
+
+    :param input_file_path: filepath to input file
+    :param output_file_path: path to output directory
+    :param sign: signature for the output image
+    """
     input_file_bytes = get_file_bytes(input_file_path)
     if input_file_bytes is None:
         print('Invalid file.')
@@ -164,9 +208,13 @@ def encode_file_name(input_file_path: str, output_file_path: str,
     image.save(f'{output_file_path}/{file_name}.png')
 
 
-def parse_args() -> argparse.Namespace:
+def parse_args_command_line() -> argparse.Namespace:
+    """Parse command line arguments
+
+    :return: dict of parsed arguments
+    """
     parser = argparse.ArgumentParser(
-        description='Converts any file into an image,'
+        description='Convert any file into an image,'
                     ' and images back to files.'
                     ' Run without args for interactive input mode.'
     )
@@ -202,7 +250,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def process_args_interactive() -> Dict[str, str]:
+def process_args_interactive() -> dict:
+    """Parse arguments with interactive standard input prompts
+
+    :return: dict of parsed arguments
+    """
     print("""
 ███████████████████████▀█████████████████████████████████
 █▄─▄█▄─▀█▀─▄██▀▄─██─▄▄▄▄█▄─▄█▄─▀█▄─▄█▄─▄▄─█▄─▀█▄─▄█─▄▄▄─█
@@ -239,10 +291,14 @@ def process_args_interactive() -> Dict[str, str]:
     }
 
 
-def process_args() -> Dict[str, str]:
+def parse_args() -> dict:
+    """Parse command line args if passed else parse interactive args
+
+    :return: dict of parsed arguments
+    """
     if not len(sys.argv) > 1:
         return process_args_interactive()
-    args = parse_args()
+    args = parse_args_command_line()
     return {
         'mode': 'd' if args.decode else 'e',
         'input': args.input,
@@ -252,7 +308,7 @@ def process_args() -> Dict[str, str]:
 
 
 def main():
-    args = process_args()
+    args = parse_args()
     if args['mode'] == 'e':
         encode_file_name(args['input'], args['output'], args['sign'])
     elif args['mode'] == 'd':
