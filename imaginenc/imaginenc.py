@@ -311,7 +311,3 @@ def main():
                 print(f'This image has been signed: {sign}')
     except OSError as err:
         print(err.strerror, file=sys.stderr)
-
-
-if __name__ == '__main__':
-    main()
