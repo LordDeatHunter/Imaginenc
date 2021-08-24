@@ -1,22 +1,27 @@
 # Imaginenc
 
-Convert any file into an image, and images back to files.
-Currently, there is no built-in way of knowing the file type of the converted image.  
-Linux users can use the `file` command.  
-Windows doesn't have anything by default, so users would need to download a Terminal Emulator.  
+[![PyPI](https://img.shields.io/pypi/v/imaginenc)](https://pypi.python.org/pypi/imaginenc)
+[![Versions](https://img.shields.io/pypi/pyversions/imaginenc)](https://pypi.python.org/pypi/imaginenc)
+[![License](https://img.shields.io/pypi/l/imaginenc)](https://pypi.python.org/pypi/imaginenc)
+[![Build](https://img.shields.io/github/workflow/status/LordDeatHunter/Imaginenc/Python%20application)]()
 
-![Source Code Image](images/imaginenc.py.png "Source Code Image")
+
+Convert any file into an image, and images back to files.  
+
+![Source Code Image](https://raw.githubusercontent.com/LordDeatHunter/Imaginenc/master/images/imaginenc.py.png "Source Code Image")
 
 ## Installation
 
-Install [Python 3.8+](https://www.python.org/) and add it to the system path.  
-Run `pip install -r requirements.txt` inside the folder and wait for the installation to finish.  
-Run `python imaginenc.py`
+Imaginenc is available on PyPI:
+```console
+$ python -m pip install imaginenc
+```
+Imaginenc requires Python 3.8+. 
 
 ## Usage
 
-```
-usage: imaginenc.py [-h] (-e | -d) -i INPUT [-o OUTPUT] [-s SIGN]
+```console
+usage: imaginenc [-h] (-e | -d) -i INPUT [-o OUTPUT] [-s SIGN]
 
 Convert any file into an image, and images back to files. Run without args for interactive input mode.
 
@@ -34,23 +39,27 @@ optional arguments:
 ## Examples of imaginenc command
 
 Encode
+
 ```bash
-python imaginenc\imaginenc.py -e -i imaginenc\imaginenc.py -o images -s "Thank you for using this tool!"
+imaginenc -e -i imaginenc\imaginenc.py -o images -s "Thank you for using this tool!"
 ```
 
 Decode
+
 ```bash
-python imaginenc\imaginenc.py -d -i images\imaginenc.py.png -o output
+imaginenc -d -i images\imaginenc.py.png -o output
 ```
 
 ## Examples of imaginenc module
 
 Import
+
 ```python
 import imaginenc
 ```
 
 Encode file name and save as image
+
 ```python
 imaginenc.encode_file_name(
     input_file_path='imaginenc/imaginenc.py',
@@ -60,6 +69,7 @@ imaginenc.encode_file_name(
 ```
 
 Encode file bytes and return image
+
 ```python
 with open('imaginenc/imaginenc.py') as f:
     image = imaginenc.encode_bytes_to_image(
@@ -70,6 +80,7 @@ with open('imaginenc/imaginenc.py') as f:
 ```
 
 Decode image name and save as original file
+
 ```python
 metadata = imaginenc.decode_image_name(
     input_file_path='images/imaginenc.py.png',
@@ -78,6 +89,7 @@ metadata = imaginenc.decode_image_name(
 ```
 
 Decode PIL image to original file bytes
+
 ```python
 from PIL import Image
 

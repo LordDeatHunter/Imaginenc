@@ -1,4 +1,4 @@
-"""Convert any file into an image"""
+"""Convert any file into an image."""
 
 from .imaginenc import (
     encode_file_name,
