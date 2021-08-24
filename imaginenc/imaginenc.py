@@ -1,4 +1,4 @@
-"""Convert any file into an image"""
+"""Convert any file into an image."""
 
 import os
 import math
