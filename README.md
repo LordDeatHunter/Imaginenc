@@ -102,3 +102,4 @@ file_bytes, metadata = imaginenc.decode_image_to_bytes(
 ## Planned Features
 
 - Encryption.
+- Converting by segments (for large files)
